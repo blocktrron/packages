@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright 2020 David Bauer <mail@david-bauer.net>
+
+USE_PROCD=1
+
+START=94
+JOOL_CMD=/usr/bin/jool
+
+
+section_disabled() {
+	config_get_bool disabled "$1" 'disabled' 1
+	[ $disabled -eq 1 ]
+}
+
+start_instance() {
+	local section="$1"
+	config_get_bool disabled "$section" 'disabled' 1
+	section_disabled $section && return
+
+	config_get name "$section" 'name'
+	[ -n "$name" ] || return
+
+	config_get pool6 "$section" 'pool6'
+	[ -n "$name" ] || return
+
+	modprobe jool
+	jool instance add "$name" --iptables  --pool6 "$pool6"
+	ip6tables -t mangle -A PREROUTING -j JOOL --instance "$name"
+	iptables -t mangle -A PREROUTING -j JOOL --instance "$name"
+}
+
+start_service() {
+	config_load jool
+	config_foreach start_instance 'jool-nat64'
+}
+
+stop_service() {
+	rmmod jool
+}
+

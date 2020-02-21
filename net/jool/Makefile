@@ -124,6 +124,11 @@ define Package/jool-tools/install
 		$(1)/usr/lib/iptables
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/iptables/libxt_JOOL.so \
 		$(1)/usr/lib/iptables
+
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/jool.init $(1)/etc/init.d/jool
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) ./files/jool.conf $(1)/etc/config/jool
 endef
 
 $(eval $(call BuildPackage,jool))
