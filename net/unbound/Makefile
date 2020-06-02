@@ -48,6 +48,19 @@ define Package/unbound-daemon/description
   necessary to meet the needs of UCI/LuCI configuration optoins.
 endef
 
+define Package/unbound-daemon-tiny
+  $(call Package/unbound/Default)
+  TITLE+= (daemon, no TLS)
+  URL:=https://nlnetlabs.nl/projects/unbound/about
+  DEPENDS:= +libunbound-tiny
+  VARIANT:=tiny
+  PROVIDES:=unbound-daemon
+endef
+
+define Package/unbound-daemon-tiny/description
+  This package contains the Unbound daemon without SSL/TLS support
+endef
+
 define Package/unbound-daemon-heavy
   $(call Package/unbound/Default)
   TITLE+= (daemon, heavy traffic)
@@ -77,6 +90,23 @@ endef
 define Package/libunbound-light/description
   This package contains the Unbound shared library with basic includes
   necessary to meet the needs of UCI/LuCI configuration options.
+endef
+
+define Package/libunbound-tiny
+  $(call Package/unbound/Default)
+  SECTION:=libs
+  CATEGORY:=Libraries
+  SUBMENU:=Networking
+  TITLE+= (library, no TLS)
+  VARIANT:=light
+  PROVIDES:=libunbound
+  DEPENDS:=
+endef
+
+define Package/libunbound-tiny/description
+  This package contains the Unbound shared library with basic includes
+  necessary to meet the needs of UCI/LuCI configuration options. TLS
+  support is missing.
 endef
 
 define Package/libunbound-heavy
@@ -155,11 +185,15 @@ CONFIGURE_ARGS += \
 	--enable-tfo-client \
 	--enable-tfo-server \
 	--with-libexpat="$(STAGING_DIR)/usr" \
-	--with-ssl="$(STAGING_DIR)/usr" \
 	--with-user=unbound \
 	--with-run-dir=/var/lib/unbound \
 	--with-conf-file=/var/lib/unbound/unbound.conf \
 	--with-pidfile=/var/run/unbound.pid
+
+ifneq ($(BUILD_VARIANT),tiny)
+	CONFIGURE_ARGS += \
+		--with-ssl="$(STAGING_DIR)/usr"
+endif
 
 ifeq ($(BUILD_VARIANT),heavy)
 	CONFIGURE_ARGS += \
@@ -182,6 +216,7 @@ define Package/unbound-daemon/conffiles
 /etc/unbound/unbound_srv.conf
 endef
 
+Package/unbound-daemon-tiny/conffiles = $(Package/unbound-daemon/conffiles)
 Package/unbound-daemon-heavy/conffiles = $(Package/unbound-daemon/conffiles)
 
 define Build/InstallDev
@@ -221,6 +256,7 @@ define Package/unbound-daemon/install
 	$(INSTALL_DATA) ./files/unbound.sh $(1)/usr/lib/unbound/unbound.sh
 endef
 
+Package/unbound-daemon-tiny/install = $(Package/unbound-daemon/install)
 Package/unbound-daemon-heavy/install = $(Package/unbound-daemon/install)
 
 define Package/libunbound-light/install
@@ -228,6 +264,7 @@ define Package/libunbound-light/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libunbound.so.* $(1)/usr/lib/
 endef
 
+Package/libunbound-tiny/install = $(Package/libunbound-light/install)
 Package/libunbound-heavy/install = $(Package/libunbound-light/install)
 
 define Package/unbound-anchor/install
@@ -256,8 +293,10 @@ define Package/unbound-host/install
 endef
 
 $(eval $(call BuildPackage,unbound-daemon))
+$(eval $(call BuildPackage,unbound-daemon-tiny))
 $(eval $(call BuildPackage,unbound-daemon-heavy))
 $(eval $(call BuildPackage,libunbound-light))
+$(eval $(call BuildPackage,libunbound-tiny))
 $(eval $(call BuildPackage,libunbound-heavy))
 $(eval $(call BuildPackage,unbound-anchor))
 $(eval $(call BuildPackage,unbound-checkconf))
