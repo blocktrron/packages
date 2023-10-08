@@ -31,6 +31,9 @@ allowing to capture raw 2G/3G/4G radio frames, among other things.
 
 It will allow you to generate PCAP captures of it using an USB dongle
 or an existing capture in another format.
+
+On Quectel Modems, the diag interface has to be enabled using the
+AT+QCFG="dbgctl",1 command
 endef
 
 define Build/Configure
