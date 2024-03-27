@@ -8,6 +8,9 @@ APDU_DEBUG="$(uci_get lpac global apdu_debug 0)"
 HTTP_BACKEND="$(uci_get lpac global http_backend curl)"
 HTTP_DEBUG="$(uci_get lpac global http_debug 0)"
 
+QMI_DEVICE="$(uci_get lpac uqmi device /dev/cdc-wdm0)"
+QMI_DEBUG="$(uci_get lpac uqmi debug 0)"
+
 AT_DEVICE="$(uci_get lpac at device /dev/ttyUSB2)"
 AT_DEBUG="$(uci_get lpac at debug 0)"
 
@@ -19,6 +22,11 @@ fi
 export LPAC_APDU="$APDU_BACKEND"
 if [ "$APDU_DEBUG" -eq 1 ]; then
     export LIBEUICC_DEBUG_APDU="1"
+fi
+
+export LPAC_QMI_DEV="$QMI_DEVICE"
+if [ "$QMI_DEBUG" -eq 1 ]; then
+    export LPAC_QMI_DEBUG="1"
 fi
 
 export AT_DEVICE="$AT_DEVICE"
